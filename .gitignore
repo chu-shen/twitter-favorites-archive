@@ -1,4 +1,3 @@
-config.yaml
-config.env
-docker-compose.yaml
-output
+config.py
+__pycache__
+liked_tweets.db

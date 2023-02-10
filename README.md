@@ -1,60 +1,30 @@
 # Twitter Favorites(Likes) Archive
 A series of scripts to archive metadata and medias of your Twitter Favorites(Likes).
 
+使用Python实现，原版见[15cm/twitter-favorites-archive](https://github.com/15cm/twitter-favorites-archive)
+
+- 使用sqlite数据库存储进度
+- 相较于原版，关键词写入时会乱码，等待上游修复
+
 ## Prerequisites
+
 ### Twitter API
 Register an App on [Twitter Developer](https://developer.twitter.com/apps) and get
 access credentials in the "Keys and Tokens" tab of your App's page.
 
-### Dependencies(for running locally)
-- ruby 2.6
-- [jq](https://github.com/stedolan/jq)
-- wget
-- GNU parallel
-- [fd](https://github.com/sharkdp/fd)
-- [exiftool](https://github.com/exiftool/exiftool)
+### Environment
+
+`pip install -r requirements.txt`
+
+`conda install sqlite twython`
 
 ## Usage
-### Run in Docker
-#### Setup
-Rename `docker/config-example.env` to `docker/config.env` and customize it with:
+
+Rename `config.template.py` to `config.py` and customize it with:
 - Twitter API credentials
-- Your username
-- [optional] Cron job schedule(for "Cron job" section)
-- Other docker ENV variables.
+- SAVE_PATH：保存路径，默认当前目录
 
-#### Oneshot
-```sh
-docker run --rm --name=tfa --env-file=./docker/config.env -v ${PWD}/output:/app/output 15cm/twitter-favorites-archive /app/scripts/main.sh -tdmu -o /app/output -c /app/output/cache.txt
-```
-
-#### Cron job
-Rename `docker/docker-compose-example.yaml` to `docker/docker-compose.yaml` and
-customize it with the mount point of `app-output` volume.
-
-`cd` into `docker` folder and run:
-```
-docker-compose up -d
-```
-
-### Run in local environment
-#### Setup
-Run `gem install bundler && bundle install` to install Ruby dependencies.
-
-Rename `config-example.yaml` to `config.yaml` and customize it with:
-- Twitter API credentials
-- Your username
-
-You can also run `./twitter-favorites-archive.rb init [args...]` to generate
-`config.yaml`.
-
-#### Execute
-1. Run `./twitter-favorites-archive.rb meta`. It will dumps meta data of
-your favorite tweets under `output/year/month/tweet_id/tweet.json`.
-2. [Optional] Run `./scripts/00-download-all-medias.sh output`. It will download all media(jpeg of photos and video thumbnail) files of `tweet.json` to the same folder.
-3. [Optional] Run `./scripts/01-update-all-medias-meta.sh output`. It will fetch meta data from `tweet.json` and populate Exif data of the downloaded media files.
-
-To run all the steps together with data dumped to `output/`, run `./scripts/archive.sh output`
+运行：`python getTweetMedia.py`
 
 ## Use cases
 ### PhotoPrism

@@ -1,0 +1,6 @@
+urllib3==1.25.7
+requests==2.27
+pyexiv2
+
+sqlite
+twython
