@@ -148,8 +148,7 @@ class TFAP:
                         image_url = media_entity["media_url_https"] + \
                             "?format=jpg&name=large"
 
-                        if not self.save_image(image_url, i):
-                            continue
+                        self.save_image(image_url, i)
 
                     # 1. download video with highest bitrate
                     # 2. video does not support some metadata fields, so download image too
@@ -165,8 +164,7 @@ class TFAP:
                                 max_bitrate = variant['bitrate']
                                 video_url = variant['url']
                             # Close the database connection
-                        if not self.save_image(video_url, i):
-                            continue
+                        self.save_image(video_url, i)
                 # Insert the tweet into the database
                 cursor.execute("""
                 INSERT OR REPLACE INTO liked_tweets (tweet_id, tweet_time)

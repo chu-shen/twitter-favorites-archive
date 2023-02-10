@@ -31,3 +31,12 @@ Rename `config.template.py` to `config.py` and customize it with:
 I import the media files gathered by this project into [PhotoPrism](https://github.com/photoprism/photoprism) so that I can browse images of my Twitter Favorites in a more flexible way.
 
 ![PhotoPrism Use Case Screenshot](./assets/images/use-case-photoprism-0.png)
+
+
+## 致谢
+
+感谢以下项目：
+
+- [15cm/twitter-favorites-archive](https://github.com/15cm/twitter-favorites-archive)
+- [LeoHsiao1/pyexiv2](https://github.com/LeoHsiao1/pyexiv2)
+- [chatgpt](https://chat.openai.com/chat)
