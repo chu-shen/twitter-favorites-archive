@@ -71,7 +71,8 @@ class TFAP:
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS liked_tweets (
             tweet_id TEXT PRIMARY KEY,
-            tweet_time TEXT
+            tweet_time TEXT,
+            is_succeed BOOLEAN
         )
         """)
 
@@ -134,12 +135,14 @@ class TFAP:
 
                 # Get the media entities for the tweet
                 try:
-                    # extended_entities可能不存在
+                    # 站外图：extended_entities可能不存在
                     media_entities = tweet["extended_entities"].get(
                         "media", [])
+                    is_succeed = 1
                 except:
-                    print("Failed to get media of ", self.url)
-                    continue
+                    print("站外图：Failed to get media of ", self.url)
+                    media_entities = []
+                    is_succeed = 0
                 image_url = None
 
                 # Iterate over each media entity
@@ -169,9 +172,9 @@ class TFAP:
                         self.save_image(video_url, i)
                 # Insert the tweet into the database
                 cursor.execute("""
-                INSERT OR REPLACE INTO liked_tweets (tweet_id, tweet_time)
-                VALUES (?, ?)
-                """, (self.tweet_id, self.created_at))
+                INSERT OR REPLACE INTO liked_tweets (tweet_id, tweet_time,is_succeed)
+                VALUES (?, ?, ?)
+                """, (self.tweet_id, self.created_at, is_succeed))
 
                 conn.commit()
 

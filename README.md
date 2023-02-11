@@ -4,6 +4,7 @@ A series of scripts to archive metadata and medias of your Twitter Favorites(Lik
 使用Python实现，原版见[15cm/twitter-favorites-archive](https://github.com/15cm/twitter-favorites-archive)
 
 - 使用sqlite数据库存储进度，效率更高
+- 暂不支持获取站外图
 
 ## Prerequisites
 
