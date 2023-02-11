@@ -45,10 +45,12 @@ class TFAP:
             img.modify_exif(exif)
 
             iptc = {
+                # https://github.com/LeoHsiao1/pyexiv2/issues/107#issuecomment-1426647658
+                # 指定编码格式，避免乱码：マリンのお宝 -> ã, ãƒžãƒªãƒ, šå
+                'Iptc.Envelope.CharacterSet': '\x1b%G',
                 'Iptc.Application2.Keywords': self.hashtags
             }
-            # 乱码：マリンのお宝 -> ã, ãƒžãƒªãƒ, šå
-            # img.modify_iptc(iptc)
+            img.modify_iptc(iptc)
 
             xmp = {
                 'Xmp.dc.subject': "Twitter Favorites Archive Project"

@@ -3,8 +3,7 @@ A series of scripts to archive metadata and medias of your Twitter Favorites(Lik
 
 使用Python实现，原版见[15cm/twitter-favorites-archive](https://github.com/15cm/twitter-favorites-archive)
 
-- 使用sqlite数据库存储进度
-- 相较于原版，关键词写入时会乱码，等待上游修复
+- 使用sqlite数据库存储进度，效率更高
 
 ## Prerequisites
 
