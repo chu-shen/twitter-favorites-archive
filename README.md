@@ -14,9 +14,11 @@ access credentials in the "Keys and Tokens" tab of your App's page.
 
 ### Environment
 
-`pip install -r requirements.txt`
+```shell
+conda install --file env_conda.txt
 
-`conda install sqlite twython`
+pip install -r env_pip.txt
+```
 
 ## Usage
 
