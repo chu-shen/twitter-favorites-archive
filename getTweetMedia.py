@@ -173,7 +173,7 @@ class TFAP:
                     is_succeed = 1
                 except:
                     print(
-                        f"Error occurred when processing tweet, url: {self.url}")
+                        f"Error occurred when processing tweet, url: https://twitter.com/i/web/status/{self.tweet_id}")
                     is_succeed = 0
 
                 # Insert the tweet into the database
