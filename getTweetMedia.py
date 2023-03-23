@@ -84,9 +84,12 @@ class TFAP:
 
         # 遍历点赞列表
         while True:
-            # https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-favorites-list
             # 获取当前登录用户的点赞
-            liked_tweets = twitter.get_favorites(max_id=max_id, count=200)
+            # https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-favorites-list
+            # 指定tweet_mode为extended，避免默认的compat丢失媒体信息
+            # https://developer.twitter.com/en/docs/twitter-api/enterprise/data-dictionary/native-enriched-objects/extended-entities
+            liked_tweets = twitter.get_favorites(
+                max_id=max_id, count=200,  tweet_mode='extended')
 
             # 如果列表为空，退出循环
             if not liked_tweets:
@@ -105,11 +108,11 @@ class TFAP:
                     continue
 
                 self.full_text = re.compile(
-                    r'(https?://\S+)', re.S).sub("", tweet['text'])
+                    r'(https?://\S+)', re.S).sub("", tweet['full_text'])
                 self.hashtags = []
                 for hashtag in tweet['entities']['hashtags']:
                     self.hashtags.append(hashtag['text'])
-                self.url = re.findall(r'(https?://\S+)', tweet['text'])
+                self.url = re.findall(r'(https?://\S+)', tweet['full_text'])
 
                 # Get the screen name of the tweet author
                 self.user_name = tweet["user"]["screen_name"]
@@ -135,12 +138,10 @@ class TFAP:
 
                 # Get the media entities for the tweet
                 try:
-                    # 站外图：extended_entities可能不存在
                     media_entities = tweet["extended_entities"].get(
                         "media", [])
                     is_succeed = 1
                 except:
-                    print("站外图：Failed to get media of ", self.url)
                     media_entities = []
                     is_succeed = 0
                 image_url = None
