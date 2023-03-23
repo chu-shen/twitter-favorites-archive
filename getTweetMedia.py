@@ -88,6 +88,7 @@ class TFAP:
             # https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-favorites-list
             # 指定tweet_mode为extended，避免默认的compat丢失媒体信息
             # https://developer.twitter.com/en/docs/twitter-api/enterprise/data-dictionary/native-enriched-objects/extended-entities
+            # TODO 多视频tweet只能获取第一个视频，暂未找到获取完整列表的方法
             liked_tweets = twitter.get_favorites(
                 max_id=max_id, count=200,  tweet_mode='extended')
 
@@ -97,80 +98,84 @@ class TFAP:
 
             # 遍历点赞列表
             for tweet in liked_tweets:
-                # Get the tweet id
-                self.tweet_id = tweet["id_str"]
-
-                # Check if the tweet is already in the database
-                cursor.execute(
-                    "SELECT * FROM liked_tweets WHERE tweet_id=?", (self.tweet_id,))
-                if cursor.fetchone():
-                    # Skip this tweet if it's already in the database
-                    continue
-
-                self.full_text = re.compile(
-                    r'(https?://\S+)', re.S).sub("", tweet['full_text'])
-                self.hashtags = []
-                for hashtag in tweet['entities']['hashtags']:
-                    self.hashtags.append(hashtag['text'])
-                self.url = re.findall(r'(https?://\S+)', tweet['full_text'])
-
-                # Get the screen name of the tweet author
-                self.user_name = tweet["user"]["screen_name"]
-
-                # Create the directory for the author
-                author_dir = os.path.join(SAVE_PATH, self.user_name)
-                os.makedirs(author_dir, exist_ok=True)
-
-                # Get the year and month from the tweet time
-                dt_object = datetime.strptime(
-                    tweet["created_at"], '%a %b %d %H:%M:%S %z %Y')
-                self.created_at = dt_object.strftime("%Y-%m-%d %H:%M:%S")
-                print(self.created_at)
-                # 年
-                year = dt_object.strftime("%Y")
-
-                # 月
-                month = dt_object.strftime("%m")
-
-                # Create the subdirectory for year and month
-                self.year_month_dir = os.path.join(author_dir, year, month)
-                os.makedirs(self.year_month_dir, exist_ok=True)
-
-                # Get the media entities for the tweet
                 try:
+                    # Get the tweet id
+                    self.tweet_id = tweet["id_str"]
+
+                    # Check if the tweet is already in the database
+                    cursor.execute(
+                        "SELECT * FROM liked_tweets WHERE tweet_id=?", (self.tweet_id,))
+                    if cursor.fetchone():
+                        # Skip this tweet if it's already in the database
+                        continue
+
+                    self.full_text = re.compile(
+                        r'(https?://\S+)', re.S).sub("", tweet['full_text'])
+                    self.hashtags = []
+                    for hashtag in tweet['entities']['hashtags']:
+                        self.hashtags.append(hashtag['text'])
+                    self.url = re.findall(
+                        r'(https?://\S+)', tweet['full_text'])
+
+                    # Get the screen name of the tweet author
+                    self.user_name = tweet["user"]["screen_name"]
+
+                    # Create the directory for the author
+                    author_dir = os.path.join(SAVE_PATH, self.user_name)
+                    os.makedirs(author_dir, exist_ok=True)
+
+                    # Get the year and month from the tweet time
+                    dt_object = datetime.strptime(
+                        tweet["created_at"], '%a %b %d %H:%M:%S %z %Y')
+                    self.created_at = dt_object.strftime("%Y-%m-%d %H:%M:%S")
+                    print(self.created_at)
+                    # 年
+                    year = dt_object.strftime("%Y")
+
+                    # 月
+                    month = dt_object.strftime("%m")
+
+                    # Create the subdirectory for year and month
+                    self.year_month_dir = os.path.join(author_dir, year, month)
+                    os.makedirs(self.year_month_dir, exist_ok=True)
+
+                    # Get the media entities for the tweet
                     media_entities = tweet["extended_entities"].get(
                         "media", [])
+
+                    image_url = None
+
+                    # Iterate over each media entity
+                    for i, media_entity in enumerate(media_entities):
+                        # media type. see also: https://www.rubydoc.info/gems/twitter/Twitter/Media, https://docs.tweepy.org/en/stable/v2_models.html#tweepy.Media
+                        if media_entity["type"] == "photo":
+                            # Get the image URL
+                            image_url = media_entity["media_url_https"] + \
+                                "?format=jpg&name=large"
+
+                            self.save_image(image_url, i)
+
+                        # 1. download video with highest bitrate
+                        # 2. video does not support some metadata fields, so download image too
+                        if media_entity["type"] in ["video", "animated_gif"]:
+                            image_url = media_entity["media_url_https"] + \
+                                "?format=jpg&name=large"
+                            self.save_image(image_url, i)
+
+                            max_bitrate = 0
+                            video_url = None
+                            for variant in media_entity['video_info']['variants']:
+                                if 'bitrate' in variant and variant['bitrate'] >= max_bitrate:
+                                    max_bitrate = variant['bitrate']
+                                    video_url = variant['url']
+                                # Close the database connection
+                            self.save_image(video_url, i)
                     is_succeed = 1
                 except:
-                    media_entities = []
+                    print(
+                        f"Error occurred when processing tweet, url: {self.url}")
                     is_succeed = 0
-                image_url = None
 
-                # Iterate over each media entity
-                for i, media_entity in enumerate(media_entities):
-                    # media type. see also: https://www.rubydoc.info/gems/twitter/Twitter/Media, https://docs.tweepy.org/en/stable/v2_models.html#tweepy.Media
-                    if media_entity["type"] == "photo":
-                        # Get the image URL
-                        image_url = media_entity["media_url_https"] + \
-                            "?format=jpg&name=large"
-
-                        self.save_image(image_url, i)
-
-                    # 1. download video with highest bitrate
-                    # 2. video does not support some metadata fields, so download image too
-                    if media_entity["type"] in ["video", "animated_gif"]:
-                        image_url = media_entity["media_url_https"] + \
-                            "?format=jpg&name=large"
-                        self.save_image(image_url, i)
-
-                        max_bitrate = 0
-                        video_url = None
-                        for variant in media_entity['video_info']['variants']:
-                            if 'bitrate' in variant and variant['bitrate'] >= max_bitrate:
-                                max_bitrate = variant['bitrate']
-                                video_url = variant['url']
-                            # Close the database connection
-                        self.save_image(video_url, i)
                 # Insert the tweet into the database
                 cursor.execute("""
                 INSERT OR REPLACE INTO liked_tweets (tweet_id, tweet_time,is_succeed)
