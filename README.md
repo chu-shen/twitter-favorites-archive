@@ -9,8 +9,11 @@ A series of scripts to archive metadata and medias of your Twitter Favorites(Lik
 ## Prerequisites
 
 ### Twitter API
-Register an App on [Twitter Developer](https://developer.twitter.com/apps) and get
-access credentials in the "Keys and Tokens" tab of your App's page.
+
+[Deprecation of legacy access tiers in the Twitter API](https://twittercommunity.com/t/deprecation-of-legacy-access-tiers-in-the-twitter-api/196162)
+
+~~Register an App on [Twitter Developer](https://developer.twitter.com/apps) and get
+access credentials in the "Keys and Tokens" tab of your App's page.~~
 
 ### Environment
 
